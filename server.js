@@ -29,12 +29,18 @@ const authenticate = (req, res, next) => {
     next();
 };
 
+// Render健康检查路径（必须要有）
+app.get('/healthz', (req, res) => {
+    res.status(200).send('OK');
+});
+
 // 根路径响应
 app.get('/', (req, res) => {
     res.json({
         code: 200,
         message: 'LX Music Sync Server is running',
-        version: '1.0.0'
+        version: '1.0.0',
+        auth_key: AUTH_KEY
     });
 });
 
@@ -47,21 +53,28 @@ app.get('/api/status', authenticate, (req, res) => {
     });
 });
 
-// 同步相关接口
-app.post('/api/sync/data', authenticate, (req, res) => {
-    // 这里处理同步数据
+// 洛雪音乐需要的同步接口
+app.post('/api/sync', authenticate, (req, res) => {
     res.json({
         code: 200,
-        message: 'Sync data received'
+        message: 'Sync successful'
     });
 });
 
-app.get('/api/sync/data', authenticate, (req, res) => {
-    // 这里返回同步数据
+app.get('/api/sync', authenticate, (req, res) => {
     res.json({
         code: 200,
-        message: 'Sync data returned',
+        message: 'Sync data',
         data: {}
+    });
+});
+
+// 404处理
+app.use('*', (req, res) => {
+    res.status(404).json({
+        code: 404,
+        message: 'Endpoint not found',
+        available_endpoints: ['/', '/healthz', '/api/status', '/api/sync']
     });
 });
 
